@@ -51,6 +51,13 @@ x264guiExでよく発生するエラーと対処方法を[こちら](./x264guiEx
 
 中身をすべてAviutlフォルダにコピーします。
 
+> [!IMPORTANT]
+> Aviutl2では、
+> - exe_filesフォルダをAviutlフォルダの中に、
+> - ```plugins```フォルダの**中身**を全て```C:\ProgramData\aviutl2\Plugin```の中に
+>
+> それぞれコピーしてください。
+
 ![中身のコピー](./data/x264guiEx_3_00_install_03.png)
 
 更新時には、下記のように上書きするか聞いてくることがあります。
