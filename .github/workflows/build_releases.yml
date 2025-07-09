@@ -90,6 +90,13 @@ jobs:
         run: |
           7z h -scrc* x264guiEx.zip
 
+      - name: delete release
+        uses: dev-drprasad/delete-tag-and-release@v1.1
+        with:
+          tag_name: new
+          delete_release: true
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: release
         uses: actions/create-release@v1
         id: create_release
