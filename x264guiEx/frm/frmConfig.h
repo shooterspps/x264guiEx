@@ -74,7 +74,7 @@ namespace AUO_NAME_R {
             list_lng = nullptr;
             dwStgReader = nullptr;
             themeMode = AuoTheme::DefaultLight;
-            cnf_fcgTemp = (CONF_X264*)calloc(1, sizeof(CONF_X264));
+            cnf_fcgTemp = (CONF_ENC*)calloc(1, sizeof(CONF_ENC));
             cnf_stgSelected = (CONF_GUIEX*)calloc(1, sizeof(CONF_GUIEX));
             InitializeComponent();
             //
@@ -4843,9 +4843,9 @@ private: System::Windows::Forms::Panel^  fcgPNHideToolStripBorder;
         }
 #pragma endregion
     private:
-        CONF_X264 *cnf_fcgTemp;
+        CONF_ENC *cnf_fcgTemp;
         const SYSTEM_DATA *sys_dat;
-        std::vector<std::string> *list_lng;
+        std::vector<tstring> *list_lng;
         CONF_GUIEX *conf;
         LocalSettings LocalStg;
         DarkenWindowStgReader *dwStgReader;
@@ -4873,7 +4873,7 @@ private: System::Windows::Forms::Panel^  fcgPNHideToolStripBorder;
         System::Void fcgTBQualityChange();
         System::Void InitTimer();
         System::Void InitComboBox();
-        System::Void setAudioDisplay();
+        System::Void setAudioExtDisplay();
         System::Void AudioEncodeModeChanged();
         System::Void InitStgFileList();
         System::Void RebuildStgFileDropDown(String^ stgDir);
@@ -4897,8 +4897,8 @@ private: System::Windows::Forms::Panel^  fcgPNHideToolStripBorder;
         System::Void fcgTSTSettingsNotes_Leave(System::Object^  sender, System::EventArgs^  e);
         System::Void fcgTSTSettingsNotes_KeyDown(System::Object^  sender, System::Windows::Forms::KeyEventArgs^  e);
         System::Void fcgTSTSettingsNotes_TextChanged(System::Object^  sender, System::EventArgs^  e);
-        System::Void GetfcgTSLSettingsNotes(char *notes, int nSize);
-        System::Void SetfcgTSLSettingsNotes(const char *notes);
+        System::Void GetfcgTSLSettingsNotes(TCHAR *notes, int nSize);
+        System::Void SetfcgTSLSettingsNotes(const TCHAR *notes);
         System::Void SetfcgTSLSettingsNotes(String^ notes);
         System::Void fcgTSBSave_Click(System::Object^  sender, System::EventArgs^  e);
         System::Void fcgTSBSaveNew_Click(System::Object^  sender, System::EventArgs^  e);
@@ -4911,13 +4911,13 @@ private: System::Windows::Forms::Panel^  fcgPNHideToolStripBorder;
         System::Void CheckTSItemsEnabled(CONF_GUIEX *current_conf);
 
         System::Void InitLangList();
-        System::Void SaveSelectedLanguage(const char *language_text);
-        System::Void SetSelectedLanguage(const char *language_text);
+        System::Void SaveSelectedLanguage(const TCHAR *language_text);
+        System::Void SetSelectedLanguage(const TCHAR *language_text);
         System::Void CheckTSLanguageDropDownItem(ToolStripMenuItem^ mItem);
         System::Void fcgTSLanguage_DropDownItemClicked(System::Object^  sender, System::Windows::Forms::ToolStripItemClickedEventArgs^  e);
 
         System::Void SetHelpToolTips();
-        System::Void SetHelpToolTipsColorMatrix(Control^ control, const char *type);
+        System::Void SetHelpToolTipsColorMatrix(Control^ control, const TCHAR *type);
         System::Void SetX264VersionToolTip(String^ x264Path);
         System::Void ShowExehelp(String^ ExePath, String^ args);
         System::Void fcgTSBOtherSettings_Click(System::Object^  sender, System::EventArgs^  e);
@@ -4955,6 +4955,13 @@ private: System::Windows::Forms::Panel^  fcgPNHideToolStripBorder;
         System::Void SetAudioBitrate(int bitrate);
         System::Void InformfbcClosed();
     private:
+        System::Boolean useAudioExt() {
+            #if ENCODER_X264 || ENCODER_X265 || ENCODER_SVTAV1
+                return true;
+            #else
+                return fcgCBAudioUseExt->Checked;
+            #endif
+        }
         System::Void AddfcgLBAMPAutoBitrate() {
             //fcgLBAMPAutoBitrateには拡張した簡易透過ラベルを使用する(背景透過&マウスイベント透過)
             //普通に作成しておくと、フォームデザイナが使用できなくなり厄介なので、ここで作っておく
@@ -5383,7 +5390,7 @@ private: System::Windows::Forms::Panel^  fcgPNHideToolStripBorder;
             fcgRebuildCmd(sender, e);
         }
     private:
-        System::Void SetCQM(int index, const char *cqmfile) {
+        System::Void SetCQM(int index, const TCHAR *cqmfile) {
             for (int i = 0; i < fcgCSCQM->Items->Count; i++) {
                 ToolStripMenuItem^ TSItem = dynamic_cast<ToolStripMenuItem^>(fcgCSCQM->Items[i]);
                 if (TSItem != nullptr)
@@ -5393,13 +5400,13 @@ private: System::Windows::Forms::Panel^  fcgPNHideToolStripBorder;
                 fcgTXCQM->Text = String(cqmfile).ToString();
         }
     private:
-        System::Int32 GetCQMIndex(char *cqmfile, int nSize) {
+        System::Int32 GetCQMIndex(TCHAR *cqmfile, int nSize) {
             for (int i = 0; i < fcgCSCQM->Items->Count; i++) {
                 ToolStripMenuItem^ TSItem = dynamic_cast<ToolStripMenuItem^>(fcgCSCQM->Items[i]);
                 if (TSItem != nullptr && TSItem->Checked) {
                     int index = Convert::ToInt32(TSItem->Tag);
                     if (index == 2)
-                        GetCHARfromString(cqmfile, nSize, fcgTXCQM->Text);
+                        GetWCHARfromString(cqmfile, nSize, fcgTXCQM->Text);
                     return index;
                 }
             }
@@ -5463,8 +5470,8 @@ private: System::Windows::Forms::Panel^  fcgPNHideToolStripBorder;
             CONF_GUIEX cnf;
             init_CONF_GUIEX(&cnf, fcgCBUsehighbit->Checked);
             FrmToConf(&cnf);
-            char cmdex[2048] = { 0 };
-            GetCHARfromString(cmdex, sizeof(cmdex), fcgTXCmdEx->Text);
+            TCHAR cmdex[2048] = { 0 };
+            GetWCHARfromString(cmdex, _countof(cmdex), fcgTXCmdEx->Text);
             set_cmd_to_conf(cmdex, &cnf.enc);
             ConfToFrm(&cnf, false);
         }
@@ -5501,12 +5508,12 @@ private: System::Windows::Forms::Panel^  fcgPNHideToolStripBorder;
         }
     private:
         System::Void fcgRebuildCmd(System::Object^  sender, System::EventArgs^  e) {
-            char re_cmd[MAX_CMD_LEN] = { 0 };
+            TCHAR re_cmd[MAX_CMD_LEN] = { 0 };
             CONF_GUIEX rebuild;
             init_CONF_GUIEX(&rebuild, fcgCBUsehighbit->Checked);
             FrmToConf(&rebuild);
             if (!rebuild.oth.disable_guicmd)
-                build_cmd_from_conf(re_cmd, sizeof(re_cmd), &rebuild.enc, &rebuild.vid, FALSE);
+                build_cmd_from_conf(re_cmd, _countof(re_cmd), &rebuild.enc, &rebuild.vid, FALSE);
             fcgTXCmd->Text = String(re_cmd).ToString();
             if (CheckedStgMenuItem != nullptr)
                 ChangePresetNameDisplay(memcmp(&rebuild, cnf_stgSelected, sizeof(CONF_GUIEX)) != 0);
@@ -5725,7 +5732,7 @@ private: System::Windows::Forms::Panel^  fcgPNHideToolStripBorder;
             array<ExeControls>^ ControlList = {
                 { fcgBTX264Path->Name,           fcgTXX264Path->Text,           sys_dat->exstg->s_enc.help_cmd },
                 { fcgBTX264PathSub->Name,        fcgTXX264PathSub->Text,        sys_dat->exstg->s_enc.help_cmd },
-                { fcgBTAudioEncoderPath->Name,   fcgTXAudioEncoderPath->Text,   sys_dat->exstg->s_aud[fcgCXAudioEncoder->SelectedIndex].cmd_help },
+                { fcgBTAudioEncoderPath->Name,   fcgTXAudioEncoderPath->Text,   sys_dat->exstg->s_aud_ext[fcgCXAudioEncoder->SelectedIndex].cmd_help },
                 { fcgBTMP4MuxerPath->Name,       fcgTXMP4MuxerPath->Text,       sys_dat->exstg->s_mux[MUXER_MP4].help_cmd },
                 { fcgBTTC2MP4Path->Name,         fcgTXTC2MP4Path->Text,         sys_dat->exstg->s_mux[MUXER_TC2MP4].help_cmd },
                 { fcgBTMP4RawPath->Name,         fcgTXMP4RawPath->Text,         sys_dat->exstg->s_mux[MUXER_MP4_RAW].help_cmd },

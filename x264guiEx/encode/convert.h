@@ -48,10 +48,8 @@ typedef struct {
     int   count;       //planarの枚数。packedなら1
     BYTE *data[3];     //planarの先頭へのポインタ
     int   size[3];     //planarのサイズ
-#if ENCODER_X265
     int   w[3], h[3], pitch[3];
     int byte_per_pixel;
-#endif
     int   total_size;  //全planarのサイズの総和
     int   colormatrix; //色空間 (BT601 / BT709)
 } CONVERT_CF_DATA;
@@ -133,9 +131,12 @@ void convert_yuy2_to_yv12_avx512(void *frame, CONVERT_CF_DATA *pixel_data, const
 void convert_yuy2_to_yv12_i_avx512(void *frame, CONVERT_CF_DATA *pixel_data, const int width, const int height);
 
 //YUY2 -> yv12 (16bit)
-void convert_yuy2_to_yv12_16bit(void *frame, CONVERT_CF_DATA *pixel_data, const int width, const int height);
-void convert_yuy2_to_yv12_i_16bit(void *frame, CONVERT_CF_DATA *pixel_data, const int width, const int height);
+void convert_yuy2_to_yv12_16bit_avx2(void *frame, CONVERT_CF_DATA *pixel_data, const int width, const int height);
+void convert_yuy2_to_yv12_i_16bit_avx2(void *frame, CONVERT_CF_DATA *pixel_data, const int width, const int height);
 
+//YUY2 -> yv12 (10bit)
+void convert_yuy2_to_yv12_10bit_avx2(void *frame, CONVERT_CF_DATA *pixel_data, const int width, const int height);
+void convert_yuy2_to_yv12_i_10bit_avx2(void *frame, CONVERT_CF_DATA *pixel_data, const int width, const int height);
 
 //YC48 -> nv12 (10bit)
 void convert_yc48_to_nv12_10bit_sse2(void *pixel, CONVERT_CF_DATA *pixel_data, const int width, const int height);
@@ -262,7 +263,11 @@ void convert_yuy2_to_nv16_avx2(void *pixel, CONVERT_CF_DATA *pixel_data, const i
 void convert_yuy2_to_nv16_16bit_avx2(void *pixel, CONVERT_CF_DATA *pixel_data, const int width, const int height);
 
 //YUY2 -> yuv422
+void convert_yuy2_to_yuv422_avx2(void *pixel, CONVERT_CF_DATA *pixel_data, const int width, const int height);
 void convert_yuy2_to_yuv422(void *pixel, CONVERT_CF_DATA *pixel_data, const int width, const int height);
+
+//YUY2 -> yuv422 (16bit)
+void convert_yuy2_to_yuv422_16bit_avx2(void *pixel, CONVERT_CF_DATA *pixel_data, const int width, const int height);
 
 //YC48 -> yuv422
 void convert_yc48_to_yuv422_16bit(void *pixel, CONVERT_CF_DATA *pixel_data, const int width, const int height);
@@ -379,5 +384,13 @@ void convert_lw48_to_yuv444_16bit_avx(void *pixel, CONVERT_CF_DATA *pixel_data, 
 void convert_lw48_to_yuv444_16bit_avx2(void *pixel, CONVERT_CF_DATA *pixel_data, const int width, const int height);
 void convert_lw48_to_yuv444_16bit_avx512bw(void *pixel, CONVERT_CF_DATA *pixel_data, const int width, const int height);
 void convert_lw48_to_yuv444_16bit_avx512vbmi(void *pixel, CONVERT_CF_DATA *pixel_data, const int width, const int height);
+
+// PA64 -> RGBA
+void convert_pa64_to_rgba_avx2(void *pixel, CONVERT_CF_DATA *pixel_data, const int width, const int height);
+void convert_pa64_to_rgba_16bit_avx2(void *pixel, CONVERT_CF_DATA *pixel_data, const int width, const int height);
+
+void convert_pa64_to_yuv444_avx2(void *pixel, CONVERT_CF_DATA *pixel_data, const int width, const int height);
+void convert_pa64_to_yuv444_16bit_avx2(void *pixel, CONVERT_CF_DATA *pixel_data, const int width, const int height);
+
 
 #endif //_CONVERT_H_

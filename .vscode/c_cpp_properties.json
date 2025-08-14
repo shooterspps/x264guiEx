@@ -9,13 +9,15 @@
                 "${workspaceFolder}/x264guiEx/prm",
                 "${workspaceFolder}/x264guiEx/frm",
                 "${workspaceFolder}/tinyxml2",
+                "${workspaceFolder}/json",
                 "${workspaceFolder}/auoCommon"
             ],
             "defines": [
                 "WIN32",
                 "_DEBUG",
                 "NDEBUG",
-                "_MBCS"
+                "UNICODE",
+                "_UNICODE"
             ],
             "windowsSdkVersion": "10.0",
             "compilerPath": "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.29.30133/bin/Hostx64/x86/cl.exe",
